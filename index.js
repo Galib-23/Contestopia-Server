@@ -140,6 +140,11 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     })
+    app.post('/contest', async (req, res) => {
+      const contest = req.body;
+      const result = await contestCollection.insertOne(contest);
+      res.send(result);
+    })
 
 
 
@@ -149,6 +154,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id)};
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    })
+    app.delete('/contest/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await contestCollection.deleteOne(query);
       res.send(result);
     })
 
@@ -175,6 +186,26 @@ async function run() {
         }
       }
       const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+    app.patch('/contest/:id', async(req, res) => {
+      const con = req.body;
+      const id = req.params.id;
+      console.log(id, con);
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          contest_name: con.contest_name,
+            image: con.photo,
+            description: con.image,
+            prizemoney: con.prizemoney,
+            reg_fee: con.reg_fee,
+            instructions: con.instructions,
+            tag: con.tag,
+            deadline: con.deadline
+        }
+      }
+      const result = await contestCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
 
