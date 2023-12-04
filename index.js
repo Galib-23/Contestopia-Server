@@ -30,6 +30,8 @@ async function run() {
     // await client.connect();
 
     const contestCollection = client.db("contestDB").collection("contest");
+    const registeredCollection = client.db('contestDB').collection("registered");
+    const userCollection = client.db('contestDB').collection("users");
 
 
     //-------------GETS-------------
@@ -43,6 +45,33 @@ async function run() {
         const result = await contestCollection.findOne(query);
         res.send(result);
     })
+    app.get('/registered', async (req, res) => {
+      const result = await registeredCollection.find().toArray();
+      res.send(result);
+    })
+
+
+
+    //-------------POSTS----------------
+    app.post('/registered', async(req, res) => {
+      const registeredContest = req.body;
+      const result = await registeredCollection.insertOne(registeredContest);
+      res.send(result);
+    })
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = {email: user.email};
+      const existingUser = await userCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: 'user exist', insertedId: null});
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
+
+
+
 
 
     // Send a ping to confirm a successful connection
