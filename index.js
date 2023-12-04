@@ -123,7 +123,6 @@ async function run() {
     })
 
 
-
     //-------------POSTS----------------
     app.post('/registered', async(req, res) => {
       const registeredContest = req.body;
@@ -208,6 +207,28 @@ async function run() {
       const result = await contestCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
+    app.patch('/contest/ut/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          status: 'accepted'
+        }
+      }
+      const result = await contestCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+    // app.patch('/contest/utd/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id)};
+    //   const updatedDoc = {
+    //     $set: {
+    //       reg_count: 
+    //     }
+    //   }
+    //   const result = await contestCollection.updateOne(filter, updatedDoc);
+    //   res.send(result);
+    // })
 
 
 
