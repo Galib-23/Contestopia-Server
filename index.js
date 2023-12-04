@@ -42,7 +42,7 @@ async function run() {
     })
     //-------------MIDDLEWARES--------------
     const verifyToken = (req, res, next) => {
-      console.log('inside verify', req.headers.authorization);
+      // console.log('inside verify', req.headers.authorization);
       if(!req.headers.authorization){
         return res.status(401).send({message: 'forbidden access'})
       }
@@ -55,10 +55,53 @@ async function run() {
         next();
       })
     }
+    const verifyAdmin = async(req, res, next) => {
+      const email = req.decoded.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if(!isAdmin){
+        return res.status(403).send({message: 'forbidden access'});
+      }
+      next();
+    }
+    const verifyCreator = async(req, res, next) => {
+      const email = req.decoded.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isCreator = user?.role === 'creator';
+      if(!isCreator){
+        return res.status(403).send({message: 'forbidden access'});
+      }
+      next();
+    }
 
 
 
     //-------------GETS-------------
+    app.get('/users/admin/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized access' });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      admin = user?.role === 'admin';
+      res.send({ admin });
+    })
+    app.get('/users/creator/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized access' });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let creator = false;
+      creator = user?.role === 'creator';
+      res.send({ creator });
+    })
+
     app.get('/contest', async (req, res) => {
         const result = await contestCollection.find().toArray();
         res.send(result);
@@ -73,7 +116,7 @@ async function run() {
       const result = await registeredCollection.find().toArray();
       res.send(result);
     })
-    app.get('/users', verifyToken, async(req, res) => {
+    app.get('/users', verifyToken, verifyAdmin, async(req, res) => {
       console.log(req.headers);
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -102,7 +145,7 @@ async function run() {
 
 
     //----------------DELETESS-------------
-    app.delete('/users/:id', async (req, res) => {
+    app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id)};
       const result = await userCollection.deleteOne(query);
@@ -112,7 +155,7 @@ async function run() {
 
 
     //--------------PATCHES-----------------
-    app.patch('/users/admin/:id', async(req, res)=> {
+    app.patch('/users/admin/:id', verifyToken, verifyAdmin, async(req, res)=> {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id)};
       const updatedDoc = {
